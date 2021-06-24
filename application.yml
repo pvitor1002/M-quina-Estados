@@ -1,0 +1,34 @@
+server.port: 8085
+
+spring.kafka:
+  bootstrap-server: localhost:9092
+  value.subject.name.strategy: io.confluent.kafka.serializers.subject.TopicRecordNameStrategy
+  listener:
+    ack-mode: MANUAL_IMMEDIATE
+    concurrency: 11
+    producer:
+      client-id: transferencia
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      client-id: transferencia
+      group-id: transferencia
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+      auto-offset-reset: latest
+
+transferencia:
+  kafka:
+    schedule:
+      group-id: transferencia-scheduler
+      concurrency: 11
+      topic: transferencia-processada
+    consumer:
+      topic-atutalizado: comando-atualizar
+      topic-comando: comando-processar
+      topic-estado: comando-estado
+    producer:
+      topic-processado: transferencia-processada
+      topic-finalizado: transferencia-concluida
+      topic-estado: comando-estado
