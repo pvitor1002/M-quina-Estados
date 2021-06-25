@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.maquinaestados.adapters.event.entity.Request;
 import org.example.maquinaestados.adapters.event.entity.Response;
 import org.example.maquinaestados.adapters.event.producer.TransferenciaProducer;
+import org.example.maquinaestados.domain.entities.maquinaestado.EventoMudancaEstado;
+import org.example.maquinaestados.domain.types.TipoEventoTransferencia;
 import org.springframework.kafka.annotation.KafkaHandler;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
@@ -15,6 +17,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -39,7 +42,14 @@ public class TransferenciaListener {
             response.setOrigin(request.getOrigin());
 
             System.out.println("Objeto convertido: " + response);
-            transferenciaProducer.produce(response, messageHeaders);
+
+            EventoMudancaEstado<Object> eventoMudancaEstado = EventoMudancaEstado.builder()
+                    .eventoOriginal("")
+                    .tipoEventoTransferencia(TipoEventoTransferencia.CRIAR_MAQUINA_ESTADOS)
+                    .id(UUID.fromString(request.getId()))
+                    .build();
+            transferenciaProducer.produceInternalTopic(eventoMudancaEstado);
+            //transferenciaProducer.produce(response, messageHeaders);
         } catch (Exception e){
             System.err.println("Erro desconhecido");
         } finally {

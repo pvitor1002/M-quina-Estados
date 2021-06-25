@@ -32,3 +32,10 @@ transferencia:
       topic-processado: transferencia-processada
       topic-finalizado: transferencia-concluida
       topic-estado: comando-estado
+
+spring:
+  data:
+    cassandra:
+      contact-points: localhost
+      port: 9042
+      keyspace-name: keyspace_transferencias
