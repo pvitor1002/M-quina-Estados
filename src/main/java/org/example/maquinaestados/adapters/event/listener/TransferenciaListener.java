@@ -3,8 +3,10 @@ package org.example.maquinaestados.adapters.event.listener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.example.maquinaestados.adapters.datastore.ContextDatastore;
 import org.example.maquinaestados.adapters.event.entity.Request;
 import org.example.maquinaestados.adapters.event.entity.Response;
+import org.example.maquinaestados.adapters.event.mapper.MessageHeaderTranslator;
 import org.example.maquinaestados.adapters.event.producer.TransferenciaProducer;
 import org.example.maquinaestados.domain.entities.maquinaestado.EventoMudancaEstado;
 import org.example.maquinaestados.domain.types.TipoEventoTransferencia;
@@ -17,6 +19,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -25,6 +29,7 @@ import java.util.UUID;
 public class TransferenciaListener {
 
     private final TransferenciaProducer transferenciaProducer;
+    private final ContextDatastore contextDatastore;
 
     @KafkaHandler
     public void transferenciaSolicitada(@Payload String payload, @Headers MessageHeaders messageHeaders, Acknowledgment ack) throws JsonProcessingException {
@@ -34,6 +39,12 @@ public class TransferenciaListener {
             String transferencia64 = payload.replaceAll("\"", "");
             byte[] decoded = Base64.getDecoder().decode(transferencia64);
             System.out.println("Iniciando transferencia.");
+
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("replyChannel", messageHeaders.get("replyChannel").toString());
+            headers.put("errorChannel", messageHeaders.get("errorChannel").toString());
+            headers.put("instanceId", messageHeaders.get("instanceId").toString());
+            contextDatastore.setHeaders(headers);
             Request request = mapper.readValue(decoded, Request.class);
 
             Response response = new Response();
@@ -49,7 +60,6 @@ public class TransferenciaListener {
                     .id(UUID.fromString(request.getId()))
                     .build();
             transferenciaProducer.produceInternalTopic(eventoMudancaEstado);
-            //transferenciaProducer.produce(response, messageHeaders);
         } catch (Exception e){
             System.err.println("Erro desconhecido");
         } finally {

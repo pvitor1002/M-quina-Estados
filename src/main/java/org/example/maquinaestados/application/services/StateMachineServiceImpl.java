@@ -3,6 +3,7 @@ package org.example.maquinaestados.application.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.example.maquinaestados.adapters.datastore.MaquinaEstadoDatastore;
+import org.example.maquinaestados.application.services.handle.TransferenciaProcessadaHandle;
 import org.example.maquinaestados.domain.entities.FaseEvento;
 import org.example.maquinaestados.domain.entities.MaquinaEstado;
 import org.example.maquinaestados.domain.types.TipoEventoTransferencia;
@@ -19,6 +20,7 @@ import java.time.OffsetDateTime;
 public class StateMachineServiceImpl implements StateMachineService{
 
     private final MaquinaEstadoDatastore estadoDatastore;
+    private final TransferenciaProcessadaHandle transferenciaProcessadaHandle;
 
     @Override
     public StateMachine<FaseEvento, TipoEventoTransferencia> createStateMachine(UUID id) throws JsonProcessingException {
@@ -61,8 +63,8 @@ public class StateMachineServiceImpl implements StateMachineService{
                 .initial(FaseEvento.TRANSFERENCIA_SOLICITADA)
 
                 .addTransition(FaseEvento.TRANSFERENCIA_SOLICITADA, FaseEvento.TRANSFERENCIA_REALIZADA)
-                .withEvent(TipoEventoTransferencia.SENHA_VALIDADA);
-
+                .withEvent(TipoEventoTransferencia.SENHA_VALIDADA)
+                .withAction(transferenciaProcessadaHandle);
 
     }
 }

@@ -13,4 +13,5 @@ public class Request {
     private String id;
 	private long origin;
 	private int messageIndex;
+	private String senha;
 }
